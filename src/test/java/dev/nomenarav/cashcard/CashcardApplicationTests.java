@@ -10,6 +10,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import javax.print.Doc;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,5 +90,32 @@ class CashcardApplicationTests {
 		assertThat(page.size()).isEqualTo(1);
 	}
 
+	@Test
+	void shouldReturnASortedPageOfCashCards(){
+		ResponseEntity<String> response = restTemplate.getForEntity("/cashcards?page=0&size=1&sort=amount,desc", String.class);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+		DocumentContext documentContext = JsonPath.parse(response.getBody());
+		JSONArray read = documentContext.read("$[*]");
+		assertThat(read.size()).isEqualTo(1);
+
+		double amount = documentContext.read("$[0].amount");
+		assertThat(amount).isEqualTo(150.00);
+	}
+
+	@Test
+	void shouldReturnASortedPageOfCahscardsWithNoParametersAndUseDefaultValues(){
+		ResponseEntity<String> response = restTemplate.getForEntity("/cashcards", String.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+		DocumentContext documentContext = JsonPath.parse(response.getBody());
+		JSONArray page = documentContext.read("$[*]");
+		assertThat(page.size()).isEqualTo(3);
+
+		JSONArray amount = documentContext.read("$..amount");
+		assertThat(amount).containsExactly(1.00, 123.45, 150.00);
+
+	}
 
 }
