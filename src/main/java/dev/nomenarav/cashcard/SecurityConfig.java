@@ -20,8 +20,8 @@ public class SecurityConfig {
         http.authorizeHttpRequests( request -> request
                     .requestMatchers("/cashcards/**")
                     .hasRole("CARD-OWNER"))
-                .httpBasic(Customizer.withDefaults())
-                .csrf(csfr -> csfr.disable());
+                .httpBasic(Customizer.withDefaults()) //    using HTTP Basic Authentication security (username and password).
+                .csrf(csfr -> csfr.disable()); // do not require CSRF security.
 
         return http.build();
     }
@@ -31,6 +31,9 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+    * Spring's IoC container will find the UserDetailsService Bean and Spring Data will use it when needed
+    */
     @Bean
     UserDetailsService testOnlyUsers(PasswordEncoder passwordEncoder){
         User.UserBuilder users = User.builder();
